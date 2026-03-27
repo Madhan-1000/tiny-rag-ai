@@ -50,3 +50,4 @@ tiny_ai_data/    ← generated index files, user creates their own
 *.pkl            ← pickle files
 *.index          ← FAISS index files
 .venv/           ← if you have a virtual env
+.pypirc

@@ -1,0 +1,1 @@
+#python script to test indexer.py seperatly.
