@@ -20,7 +20,7 @@ def _load_models(cache_dir=_cache_dir):
     global _embed_model, _llm, _index, _chunks
     if _embed_model is None:
         from sentence_transformers import SentenceTransformer
-        _embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2" ,cache_dir=_cache_dir)
+        _embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2" ,cache_folder=_cache_dir)
     if _llm is None:
         
         from huggingface_hub import hf_hub_download
@@ -33,23 +33,33 @@ def _load_models(cache_dir=_cache_dir):
         )
         _llm = Llama(model_path=model_path, n_ctx=4096, n_threads=16)
 
-    if _index is None:
-        _index = faiss.read_index(str(Path(_save_path) / "faiss.index"))  # ← fixed
 
+def _load_index():
+    global _index, _chunks ,_save_path
+    if _save_path is None:
+        default = Path("./tiny_ai_data/config.txt")
+        if default.exists():
+            _save_path = default.read_text().strip()
+        else:
+            print("Error: run index() first")
+            return
+    if _index is None:
+        _index = faiss.read_index(str(Path(_save_path) / "faiss.index"))
+    
     if _chunks is None:
         try:
-            with open(Path(_save_path) / "chunks.pkl", "rb") as data_file:  # ← fixed
-                _chunks = pickle.load(data_file)
+            with open(Path(_save_path) / "chunks.pkl", "rb") as f:
+                _chunks = pickle.load(f)
         except FileNotFoundError:
-            print(f"Error: The file with data is not found")
+            print("Error: index files not found, run index() first")
         except Exception as e:
             print(f"An error occurred: {e}")
 
-
 def search(query: str, k=6):
     _load_models()
-    query_vector = _embed_model.encode(query).astype("float32").reshape(1, -1)
-    distances, indices = _index.search(query_vector, k)
+    _load_index()
+    query_vector = _embed_model.encode([query]).astype("float32").reshape(1, -1)
+    distances, indices = _index.search(query_vector, k)      
     results = [_chunks[i] for i in indices[0]]
     return "\n".join(results)
 

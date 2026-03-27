@@ -121,6 +121,8 @@ def embed_chunks(chunks:list,embed_model):
     array of float32 values which are embedded using the model. 
     """
     embeddings_array=embed_model.encode(chunks).astype("float32")
+    if len(embeddings_array.shape) == 1:
+        embeddings_array = embeddings_array.reshape(1, -1)
     return embeddings_array
 
 

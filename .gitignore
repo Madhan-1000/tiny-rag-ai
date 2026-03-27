@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Package build
+*.egg-info/
+dist/
+build/
+*.egg
+*.whl
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# tiny-ai specific
+tiny_ai_data/       ← your FAISS index + chunks (user generates this locally)
+*.index
+*.pkl
+
+# Models cache
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+```
+
+---
+
+## Most Important Ones For You
+```
+__pycache__/     ← compiled Python bytecode, never push
+tiny_ai_data/    ← generated index files, user creates their own
+*.pkl            ← pickle files
+*.index          ← FAISS index files
+.venv/           ← if you have a virtual env

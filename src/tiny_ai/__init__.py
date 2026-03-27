@@ -4,6 +4,16 @@ import numpy as np
 
 
 def index(folder_path, save_path="./tiny_ai_data"):
+    """
+    This fucntion does many things to initialize the setup.
+    -> First loads all the documents
+    -> Second the seperates them into chunks 
+    -> Third Loads all the AI models
+    -> Then Embeddes the chunks into vectors
+    -> Then it will store them in a faiss index
+    -> After that the path for saving the indexes is done 
+    """
+    
     documents=indexer.load_documenmts(folder_path=folder_path)
     chunks=[]
     for doc in documents:
@@ -17,5 +27,8 @@ def index(folder_path, save_path="./tiny_ai_data"):
     indexer.save_index(faiss_index,chunks=chunks,save_path=save_path)
     
     
-def chat(query, use_case):
+def chat(query, use_case):  
+    """
+    This fucntion does exactly what is in its name it just calls the ai fucntion.
+    """
     return engine.chat(user_query=query,usecase=use_case)
