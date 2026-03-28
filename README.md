@@ -1,6 +1,8 @@
 # Tiny RAG AI
 
-A lightweight Python library for embedding a chatbot into your web app with a simple function call.
+
+A fully local RAG chatbot library. No API keys, no external servers, just 2 lines of code.  
+Runs entirely on-device in ~500MB of memory using the Qwen2.5-0.5B model.
 
 ## What it is
 - Wraps the Qwen2.5-0.5B-Instruct-GGUF model.
@@ -11,132 +13,115 @@ A lightweight Python library for embedding a chatbot into your web app with a si
 - Minimal setup and small footprint.
 - Focus on your app logic instead of infrastructure.
 
-# tiny-rag-ai
 
-A fully local RAG chatbot library. No API keys, no external servers, just 2 lines of code. Runs entirely on-device in ~500MB of memory.
 
-## Why use it
-- No API keys needed
-- No external servers
-- Fully offline after first model download
-- ~500MB memory footprint
-- Works with any PDF or TXT documents
-
+ 
 ## Installation
-
-### Step 1 — Install llama-cpp-python (pre-built, no compilation)
+ 
+### Step 1 — Install llama-cpp-python (pre-built, no compilation needed)
+ 
+Pick the version that matches your hardware:
+ 
 ```bash
+# CPU only
 pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+ 
+# CUDA 12.1 (NVIDIA GPU)
+pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121
+ 
+# Metal (macOS Apple Silicon)
+pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/metal
 ```
-
+ 
 ### Step 2 — Install tiny-rag-ai
+ 
 ```bash
 pip install tiny-rag-ai
 ```
-
+ 
+---
+ 
 ## Quick Start
+ 
 ```python
 import tiny_rag_ai
-
+ 
 tiny_rag_ai.index("./docs")
-
+ 
 answer = tiny_rag_ai.chat("What is your return policy?", use_case="customer support bot")
 print(answer)
 ```
-
-## Usage in Flask
+ 
+`index()` only needs to run once. After that, the FAISS index is saved to disk and reloaded automatically on the next run.
+ 
+---
+ 
+## Framework Examples
+ 
+### Flask
+ 
 ```python
-from flask import Flask, request, jsonify
 import tiny_rag_ai
-
-app = Flask(__name__)
 tiny_rag_ai.index("./docs")
-
+ 
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    answer = tiny_rag_ai.chat(data.get("message"), use_case="customer support bot")
-    return jsonify({"answer": answer})
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return jsonify({"answer": tiny_rag_ai.chat(data["message"], use_case="support bot")})
 ```
-
-## Usage in FastAPI
+ 
+### FastAPI
+ 
 ```python
-from fastapi import FastAPI
-from pydantic import BaseModel
 import tiny_rag_ai
-
-app = FastAPI()
-
-@app.on_event("startup")
-def startup():
-    tiny_rag_ai.index("./docs")
-
-class ChatRequest(BaseModel):
-    message: str
-    use_case: str = "customer support bot"
-
+tiny_rag_ai.index("./docs")
+ 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    answer = tiny_rag_ai.chat(req.message, use_case=req.use_case)
-    return {"answer": answer}
+    return {"answer": tiny_rag_ai.chat(req.message, use_case="support bot")}
 ```
-
-## Usage in Django
+ 
+### Django
+ 
 ```python
-# apps.py
-from django.apps import AppConfig
-
-class MyAppConfig(AppConfig):
-    name = "myapp"
-
-    def ready(self):
-        import tiny_rag_ai
-        tiny_rag_ai.index("./docs")
-```
-```python
-# views.py
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
+# Call index() in AppConfig.ready(), then use tiny_rag_ai.chat() in your view as normal.
 import tiny_rag_ai
-
-@csrf_exempt
-def chat(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        answer = tiny_rag_ai.chat(data.get("message"), use_case="customer support bot")
-        return JsonResponse({"answer": answer})
+answer = tiny_rag_ai.chat(request.POST["message"], use_case="support bot")
 ```
-```python
-# urls.py
-from django.urls import path
-from . import views
-
-urlpatterns = [
-    path("chat/", views.chat),
-]
+ 
+---
+ 
+## Deploying to Render (or any cloud server)
+ 
+Set this environment variable to persist downloaded models across deploys:
+ 
 ```
-
-## On Render / Production Server
-
-Set this environment variable to persist models across deploys:
+TINY_AI_CACHE_DIR=/data/models
 ```
-tiny_rag_ai_CACHE_DIR=/data/models
-```
-
-Mount a persistent disk at `/data` with minimum 1GB.
-
-## How it Works
-```
-Your Docs (PDF/TXT)
-      ↓ index()
-Chunk → Embed → FAISS index saved to disk
-                        ↓ chat()
-           Search → Build Prompt → Qwen LLM → Answer
-```
+ 
+Mount a persistent disk at `/data` with a minimum of 1GB.
+ 
+---
+ 
+## API Reference
+ 
+### `tiny_rag_ai.index(folder_path, save_path, n_ctx, threads)`
+ 
+| Parameter | Default | Description |
+|---|---|---|
+| `folder_path` | required | Path to your documents folder (PDF/TXT) |
+| `save_path` | `./tiny_ai_data` | Where to save the FAISS index and chunks |
+| `n_ctx` | `2048` | Context window size for the LLM |
+| `threads` | `8` | Number of CPU threads for inference |
+ 
+### `tiny_rag_ai.chat(query, use_case)`
+ 
+| Parameter | Default | Description |
+|---|---|---|
+| `query` | required | The user's question |
+| `use_case` | required | Describes the bot's role e.g. `"customer support bot"` |
+ 
+---
 
 ## Stack
 - LLM: Qwen2.5 0.5B via llama-cpp-python

@@ -16,11 +16,11 @@ def set_save_path(path: str):
     _save_path = path
     
 
-def _load_models(cache_dir=_cache_dir):
+def _load_models(cache_dir=_cache_dir, n_ctx=2048, threads=8):
     global _embed_model, _llm, _index, _chunks
     if _embed_model is None:
         from sentence_transformers import SentenceTransformer
-        _embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2" ,cache_folder=_cache_dir)
+        _embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2" ,cache_folder=cache_dir)
     if _llm is None:
         
         from huggingface_hub import hf_hub_download
@@ -31,7 +31,7 @@ def _load_models(cache_dir=_cache_dir):
             filename="qwen2.5-0.5b-instruct-q4_k_m.gguf",
             cache_dir=_cache_dir
         )
-        _llm = Llama(model_path=model_path, n_ctx=4096, n_threads=16)
+        _llm = Llama(model_path=model_path, n_ctx=n_ctx, n_threads=threads)
 
 
 def _load_index():

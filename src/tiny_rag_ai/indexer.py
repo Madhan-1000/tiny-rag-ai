@@ -3,7 +3,7 @@ import pickle
 import fitz
 from pathlib import Path
 
-def load_documenmts(folder_path: str) -> list:
+def load_documents(folder_path: str) -> list:
     """
     Returns all the loaded documents in the path.
 
