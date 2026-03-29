@@ -1,5 +1,6 @@
 # Tiny RAG AI
 
+<img src="assets/logo.jpg" alt="TINY RAG AI" width="100" />
 
 A fully local RAG chatbot library. No API keys, no external servers, just 2 lines of code.  
 Runs entirely on-device in ~500MB of memory using the Qwen2.5-0.5B model.

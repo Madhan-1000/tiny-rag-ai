@@ -81,7 +81,7 @@ def generate(prompt:str,max_tokens:int=650):
     answer_output=_llm(prompt,max_tokens=max_tokens,echo=False,stop=["<|im_end|>"])
     return answer_output["choices"][0]["text"].strip()
 
-def chat(user_query:str,usecase:str):
+def chat(user_query:str,usecase:str,k:int):
     context=search(query=user_query)
     
     prompt=build_prompt(user_query,context=context,use_case=usecase)
